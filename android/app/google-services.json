@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1029414201844",
+    "project_id": "emailpasswordauth-171fd",
+    "storage_bucket": "emailpasswordauth-171fd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029414201844:android:c7d41a699b85b3df9ff1a1",
+        "android_client_info": {
+          "package_name": "com.example.chat_app_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1029414201844-3u8naebgcc7aigl6jtekviplke5le622.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4n_SEUyuG7ShS9ESpdHtE5_iHcTxz-64"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1029414201844-3u8naebgcc7aigl6jtekviplke5le622.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
