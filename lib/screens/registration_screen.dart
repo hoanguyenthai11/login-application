@@ -1,13 +1,8 @@
-import 'dart:math';
-
-import 'package:chat_app_flutter/controllers/sign_up.dart';
-import 'package:chat_app_flutter/models/user.dart';
-import 'package:chat_app_flutter/screens/home_screen.dart';
-import 'package:chat_app_flutter/screens/login_screen.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+
+import '../controllers/auth_controller.dart';
+import '../screens/home_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -31,7 +26,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   final _auth = FirebaseAuth.instance;
   //
+  bool _isLoading = false;
   void signUp() async {
+    setState(() {
+      _isLoading = true;
+    });
     AuthenticationController _auth = AuthenticationController();
     var sigUpUser = await _auth
         .signUp(_formKey, _emailEditingController.text,
@@ -43,6 +42,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           _firstNameEditingController.text,
           _secondNameEditingController.text,
           context);
+      setState(() {
+        _isLoading = false;
+      });
       Navigator.pushAndRemoveUntil(
           (context),
           MaterialPageRoute(builder: (context) => HomeScreen()),
@@ -243,15 +245,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         onPressed: () {
           signUp();
         },
-        child: const Text(
-          'Signup',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              )
+            : const Text(
+                'Signup',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
 

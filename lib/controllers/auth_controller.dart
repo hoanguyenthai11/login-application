@@ -20,23 +20,6 @@ class AuthenticationController {
       Fluttertoast.showToast(msg: e.toString());
     }
   }
-//  void sigIn(String email, String password) async {
-//     if (_formKey.currentState!.validate()) {
-//       await _auth
-//           .signInWithEmailAndPassword(email: email, password: password)
-//           .then((value) => {
-//                 Fluttertoast.showToast(msg: 'Login Successful'),
-//                 Navigator.of(context).pushReplacement(
-//                   MaterialPageRoute(
-//                     builder: (context) => HomeScreen(),
-//                   ),
-//                 ),
-//               })
-//           .catchError((e) {
-//         Fluttertoast.showToast(msg: e!.message);
-//       });
-//     }
-//   }
 
   Future<void> sigIn(GlobalKey<FormState> formKey, String email,
       String password, BuildContext context) async {

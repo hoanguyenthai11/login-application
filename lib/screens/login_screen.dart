@@ -1,9 +1,6 @@
-import 'package:chat_app_flutter/controllers/sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
-import '../screens/home_screen.dart';
+import '../controllers/auth_controller.dart';
 import '../screens/registration_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -23,17 +20,24 @@ class _LoginScreenState extends State<LoginScreen> {
 
   //
   bool _isObscure = true;
-  FirebaseAuth _auth = FirebaseAuth.instance;
   //
   final AuthenticationController _authentication = AuthenticationController();
+  //
+  bool _isLoading = false;
 
   void sigIn() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       await _authentication.sigIn(
           _formKey, _emailController.text, _passwordController.text, context);
     } catch (e) {
       print(e);
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -129,15 +133,21 @@ class _LoginScreenState extends State<LoginScreen> {
         onPressed: () {
           sigIn();
         },
-        child: const Text(
-          'Login',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 20,
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                ),
+              )
+            : const Text(
+                'Login',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
 
@@ -193,11 +203,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text('Don\'t have an account? '),
                       GestureDetector(
                         onTap: () {
-                          // Navigator.of(context).push(
-                          //   MaterialPageRoute(
-                          //     builder: ((context) => RegistrationScreen()),
-                          //   ),
-                          // );
                           Navigator.of(context)
                               .push(
                             MaterialPageRoute(
