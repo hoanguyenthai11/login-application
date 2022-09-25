@@ -1,5 +1,4 @@
-import 'package:chat_app_flutter/imageupload/image_upload.dart';
-import 'package:chat_app_flutter/imageupload/show_iamges.dart';
+import 'package:chat_app_flutter/controllers/sign_up.dart';
 import 'package:chat_app_flutter/models/user.dart';
 import 'package:chat_app_flutter/screens/login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -14,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  UserModel loggedInUser = UserModel();
+  UserModel userModel = UserModel();
   User? user = FirebaseAuth.instance.currentUser;
 
   @override
@@ -25,9 +24,19 @@ class _HomeScreenState extends State<HomeScreen> {
         .doc(user!.uid)
         .get()
         .then((value) {
-      this.loggedInUser = UserModel.fromMap(value.data());
+      userModel = UserModel.fromMap(value.data());
       setState(() {});
     });
+  }
+
+  logOut() async {
+    final AuthenticationController _auth = AuthenticationController();
+    await _auth.signOut();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: ((context) => LoginScreen()),
+      ),
+    );
   }
 
   @override
@@ -38,66 +47,62 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const Text(
+                'Welcome Back',
+                maxLines: 1,
+                style: TextStyle(
+                    fontSize: 60,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'BebasNeue'),
+              ),
+              const SizedBox(
+                height: 50,
+              ),
               SizedBox(
                 height: 150,
                 child: Image.asset(
-                  'assets/logo.png',
+                  'assets/images/dash_logo.png',
                   fit: BoxFit.contain,
                 ),
               ),
-              Text(
-                'Welcome Back',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+              const SizedBox(
+                height: 50,
+              ),
+              const Text(
+                'User name:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               const SizedBox(
                 height: 10,
               ),
               Text(
-                '${loggedInUser.firstName} ${loggedInUser.secondName}',
-                style: TextStyle(
+                '${userModel.firstName} ${userModel.secondName}',
+                style: const TextStyle(
                   color: Colors.black54,
                   fontWeight: FontWeight.w500,
                 ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              const Text(
+                'Email:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              const SizedBox(
+                height: 10,
               ),
               Text(
-                '${loggedInUser.email}',
-                style: TextStyle(
+                '${userModel.email}',
+                style: const TextStyle(
                   color: Colors.black54,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 15,
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: ((context) => ImageUpload(
-                            userId: loggedInUser.uid,
-                          )),
-                    ),
-                  );
-                },
-                child: Text('Upload Image'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: ((context) => ShowUploads(
-                            userId: loggedInUser.uid,
-                          )),
-                    ),
-                  );
-                },
-                child: Text('Show Image'),
               ),
             ],
           ),
@@ -106,30 +111,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<void> logOut() async {
-    final logOut = FirebaseAuth.instance;
-    await logOut.signOut();
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: ((context) => LoginScreen()),
-      ),
-    );
-  }
-
   _appBar() {
     final appBarHeight = AppBar().preferredSize.height;
     return PreferredSize(
-        child: AppBar(
-          title: const Text('Profile'),
-          actions: [
-            IconButton(
-              onPressed: () {
-                logOut();
-              },
-              icon: Icon(Icons.logout),
-            ),
-          ],
-        ),
-        preferredSize: Size.fromHeight(appBarHeight));
+      preferredSize: Size.fromHeight(appBarHeight),
+      child: AppBar(
+        title: const Text('Profile'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              logOut();
+            },
+            icon: const Icon(Icons.logout),
+          ),
+        ],
+      ),
+    );
   }
 }

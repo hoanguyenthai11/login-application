@@ -1,14 +1,13 @@
-import 'package:chat_app_flutter/screens/home_screen.dart';
-import 'package:chat_app_flutter/screens/registration_screen.dart';
+import 'package:chat_app_flutter/controllers/sign_up.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../screens/home_screen.dart';
+import '../screens/registration_screen.dart';
+
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -19,18 +18,30 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
   //editing controller
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
-  //firebase
-  final _auth = FirebaseAuth.instance;
+  //
+  bool _isObscure = true;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  //
+  final AuthenticationController _authentication = AuthenticationController();
+
+  void sigIn() async {
+    try {
+      await _authentication.sigIn(
+          _formKey, _emailController.text, _passwordController.text, context);
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     //email filed
     final emailField = TextFormField(
       autofocus: false,
-      controller: emailController,
+      controller: _emailController,
       keyboardType: TextInputType.emailAddress,
       validator: (value) {
         if (value!.isEmpty) {
@@ -42,11 +53,11 @@ class _LoginScreenState extends State<LoginScreen> {
         return null;
       },
       onSaved: (value) {
-        emailController.text = value!;
+        _emailController.text = value!;
       },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.mail),
+        prefixIcon: const Icon(Icons.mail),
         contentPadding: const EdgeInsets.fromLTRB(
           20,
           15,
@@ -61,9 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     final passwordField = TextFormField(
-      obscureText: true,
+      obscureText: _isObscure,
       autofocus: false,
-      controller: passwordController,
+      controller: _passwordController,
       validator: (value) {
         RegExp regExp = RegExp(r'^.{6,}$');
         if (value!.isEmpty) {
@@ -75,11 +86,21 @@ class _LoginScreenState extends State<LoginScreen> {
         return null;
       },
       onSaved: (value) {
-        passwordController.text = value!;
+        _passwordController.text = value!;
       },
       textInputAction: TextInputAction.done,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.vpn_key),
+        prefixIcon: const Icon(Icons.vpn_key),
+        suffixIcon: IconButton(
+          icon: _isObscure
+              ? const Icon(Icons.visibility)
+              : const Icon(Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              _isObscure = !_isObscure;
+            });
+          },
+        ),
         contentPadding: const EdgeInsets.fromLTRB(
           20,
           15,
@@ -96,7 +117,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final loginButton = Material(
       elevation: 5,
       borderRadius: BorderRadius.circular(30),
-      color: Colors.redAccent,
+      color: Colors.blue,
       child: MaterialButton(
         padding: const EdgeInsets.fromLTRB(
           20,
@@ -106,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         minWidth: double.infinity,
         onPressed: () {
-          sigIn(emailController.text, passwordController.text);
+          sigIn();
         },
         child: const Text(
           'Login',
@@ -133,14 +154,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
-                    height: 150,
+                    height: 250,
+                    width: 250,
                     child: Image.asset(
-                      'assets/logo.png',
+                      'assets/images/dash_logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),
+                  const Text(
+                    'HELLO AGAIN!',
+                    style: TextStyle(fontFamily: 'BebasNeue', fontSize: 52),
+                  ),
                   const SizedBox(
-                    height: 45,
+                    height: 20,
+                  ),
+                  const Text(
+                    'Welcome back, you\'ve ben missed!',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(
+                    height: 40,
                   ),
                   emailField,
                   const SizedBox(
@@ -160,16 +193,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       const Text('Don\'t have an account? '),
                       GestureDetector(
                         onTap: () {
-                          Navigator.of(context).push(
+                          // Navigator.of(context).push(
+                          //   MaterialPageRoute(
+                          //     builder: ((context) => RegistrationScreen()),
+                          //   ),
+                          // );
+                          Navigator.of(context)
+                              .push(
                             MaterialPageRoute(
-                              builder: ((context) => RegistrationScreen()),
+                              builder: (context) => RegistrationScreen(),
                             ),
-                          );
+                          )
+                              .then((value) {
+                            _emailController.clear();
+                            _passwordController.clear();
+                          });
                         },
                         child: const Text(
-                          'SignUp',
+                          'Signup',
                           style: TextStyle(
-                              color: Colors.redAccent,
+                              color: Colors.blueAccent,
                               fontWeight: FontWeight.bold,
                               fontSize: 15),
                         ),
@@ -183,23 +226,5 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  void sigIn(String email, String password) async {
-    if (_formKey.currentState!.validate()) {
-      await _auth
-          .signInWithEmailAndPassword(email: email, password: password)
-          .then((value) => {
-                Fluttertoast.showToast(msg: 'Login Successful'),
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(
-                    builder: (context) => HomeScreen(),
-                  ),
-                ),
-              })
-          .catchError((e) {
-        Fluttertoast.showToast(msg: e!.message);
-      });
-    }
   }
 }

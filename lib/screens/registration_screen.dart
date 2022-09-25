@@ -1,5 +1,9 @@
+import 'dart:math';
+
+import 'package:chat_app_flutter/controllers/sign_up.dart';
 import 'package:chat_app_flutter/models/user.dart';
 import 'package:chat_app_flutter/screens/home_screen.dart';
+import 'package:chat_app_flutter/screens/login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -16,18 +20,41 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   //form key
   final _formKey = GlobalKey<FormState>();
   //editing controller
-  final firstNameEditingController = TextEditingController();
-  final secondNameEditingController = TextEditingController();
-  final emailEditingController = TextEditingController();
-  final passwordEditingController = TextEditingController();
-  final confirmPasswordEditingController = TextEditingController();
+  final _firstNameEditingController = TextEditingController();
+  final _secondNameEditingController = TextEditingController();
+  final _emailEditingController = TextEditingController();
+  final _passwordEditingController = TextEditingController();
+  final _confirmPasswordEditingController = TextEditingController();
+
+  //
+  bool _isObscure = true;
 
   final _auth = FirebaseAuth.instance;
+  //
+  void signUp() async {
+    AuthenticationController _auth = AuthenticationController();
+    var sigUpUser = await _auth
+        .signUp(_formKey, _emailEditingController.text,
+            _passwordEditingController.text)
+        .then((value) {
+      _auth.postDetailToFireStore(
+          _emailEditingController.text,
+          _passwordEditingController.text,
+          _firstNameEditingController.text,
+          _secondNameEditingController.text,
+          context);
+      Navigator.pushAndRemoveUntil(
+          (context),
+          MaterialPageRoute(builder: (context) => HomeScreen()),
+          (route) => false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final firstNameField = TextFormField(
       autofocus: false,
-      controller: firstNameEditingController,
+      controller: _firstNameEditingController,
       keyboardType: TextInputType.name,
       validator: (value) {
         RegExp regExp = RegExp(r'^.{3,}$');
@@ -40,11 +67,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         return null;
       },
       onSaved: (value) {
-        firstNameEditingController.text = value!;
+        _firstNameEditingController.text = value!;
       },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.person),
+        prefixIcon: const Icon(Icons.person),
         contentPadding: const EdgeInsets.fromLTRB(
           20,
           15,
@@ -60,7 +87,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     final secondNameField = TextFormField(
       autofocus: false,
-      controller: secondNameEditingController,
+      controller: _secondNameEditingController,
       keyboardType: TextInputType.name,
       validator: (value) {
         if (value!.isEmpty) {
@@ -69,7 +96,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         return null;
       },
       onSaved: (value) {
-        secondNameEditingController.text = value!;
+        _secondNameEditingController.text = value!;
       },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
@@ -89,7 +116,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     final emailField = TextFormField(
       autofocus: false,
-      controller: emailEditingController,
+      controller: _emailEditingController,
       keyboardType: TextInputType.emailAddress,
       validator: (value) {
         if (value!.isEmpty) {
@@ -101,7 +128,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         return null;
       },
       onSaved: (value) {
-        emailEditingController.text = value!;
+        _emailEditingController.text = value!;
       },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
@@ -120,9 +147,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     );
 
     final passwordField = TextFormField(
-      obscureText: true,
+      obscureText: _isObscure,
       autofocus: false,
-      controller: passwordEditingController,
+      controller: _passwordEditingController,
       validator: (value) {
         RegExp regExp = RegExp(r'^.{6,}$');
         if (value!.isEmpty) {
@@ -134,16 +161,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         return null;
       },
       onSaved: (value) {
-        passwordEditingController.text = value!;
+        _passwordEditingController.text = value!;
       },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.vpn_key),
+        prefixIcon: const Icon(Icons.vpn_key),
         contentPadding: const EdgeInsets.fromLTRB(
           20,
           15,
           20,
           15,
+        ),
+        suffixIcon: IconButton(
+          icon: _isObscure
+              ? const Icon(Icons.visibility)
+              : const Icon(Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              _isObscure = !_isObscure;
+            });
+          },
         ),
         hintText: 'Password',
         border: OutlineInputBorder(
@@ -152,29 +189,39 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       ),
     );
     final confirmPasswordField = TextFormField(
-      obscureText: true,
+      obscureText: _isObscure,
       autofocus: false,
-      controller: confirmPasswordEditingController,
+      controller: _confirmPasswordEditingController,
       validator: ((value) {
-        if (confirmPasswordEditingController.text.length > 6 &&
-            value != passwordEditingController.text) {
+        if (_confirmPasswordEditingController.text.length > 6 &&
+            value != _passwordEditingController.text) {
           return 'Password dont match';
         }
         return null;
       }),
       onSaved: (value) {
-        confirmPasswordEditingController.text = value!;
+        _confirmPasswordEditingController.text = value!;
       },
       textInputAction: TextInputAction.done,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.vpn_key),
+        prefixIcon: const Icon(Icons.vpn_key),
         contentPadding: const EdgeInsets.fromLTRB(
           20,
           15,
           20,
           15,
         ),
-        hintText: 'Password',
+        suffixIcon: IconButton(
+          icon: _isObscure
+              ? const Icon(Icons.visibility)
+              : const Icon(Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              _isObscure = !_isObscure;
+            });
+          },
+        ),
+        hintText: 'Confirm Password',
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -184,7 +231,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     final signupButton = Material(
       elevation: 5,
       borderRadius: BorderRadius.circular(30),
-      color: Colors.redAccent,
+      color: Colors.blue,
       child: MaterialButton(
         padding: const EdgeInsets.fromLTRB(
           20,
@@ -194,9 +241,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
         minWidth: double.infinity,
         onPressed: () {
-          signUp(emailEditingController.text, passwordEditingController.text);
+          signUp();
         },
-        child: Text(
+        child: const Text(
           'Signup',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -210,19 +257,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.redAccent,
-          ),
-        ),
-      ),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -236,7 +270,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   SizedBox(
                     height: 150,
                     child: Image.asset(
-                      'assets/logo.png',
+                      'assets/images/dash_logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -267,6 +301,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   const SizedBox(
                     height: 15,
                   ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('Don\'t have an account? '),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                              color: Colors.blueAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15),
+                        ),
+                      )
+                    ],
+                  )
                 ],
               ),
             ),
@@ -274,42 +326,5 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ),
       ),
     );
-  }
-
-  void signUp(String email, String password) async {
-    if (_formKey.currentState!.validate())
-      await _auth
-          .createUserWithEmailAndPassword(email: email, password: password)
-          .then((value) {
-        postDetailToFireStore();
-      }).catchError((e) {
-        Fluttertoast.showToast(msg: e.message);
-      });
-  }
-
-  postDetailToFireStore() async {
-    //calling our firesotre
-    //calling our user model
-    //sending these values
-    FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
-    User? user = _auth.currentUser;
-
-    UserModel userModel = UserModel();
-    //writing all the value
-    userModel.email = user!.email;
-    userModel.uid = user.uid;
-    userModel.firstName = firstNameEditingController.text;
-    userModel.secondName = secondNameEditingController.text;
-
-    await firebaseFirestore
-        .collection('user')
-        .doc(user.uid)
-        .set(userModel.toMap());
-
-    Fluttertoast.showToast(msg: 'Account created successfully');
-    Navigator.pushAndRemoveUntil(
-        (context),
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-        (route) => false);
   }
 }
