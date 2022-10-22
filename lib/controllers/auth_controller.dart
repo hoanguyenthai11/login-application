@@ -10,12 +10,10 @@ class AuthenticationController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> signUp(
-      GlobalKey<FormState> formKey, String email, String password) async {
+      String email, String password, BuildContext context) async {
     try {
-      if (formKey.currentState!.validate()) {
-        await _auth.createUserWithEmailAndPassword(
-            email: email, password: password);
-      }
+      await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
     } catch (e) {
       Fluttertoast.showToast(msg: e.toString());
     }
@@ -30,7 +28,7 @@ class AuthenticationController {
         Fluttertoast.showToast(msg: 'Login Successful');
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => HomeScreen(),
+            builder: (context) => const HomeScreen(),
           ),
         );
       }).catchError((e) => Fluttertoast.showToast(msg: e!.message));

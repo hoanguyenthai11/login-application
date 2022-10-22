@@ -1,8 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:chat_app_flutter/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../controllers/auth_controller.dart';
-import '../screens/home_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -24,31 +23,66 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   //
   bool _isObscure = true;
 
-  final _auth = FirebaseAuth.instance;
+  final AuthenticationController authenticationController =
+      AuthenticationController();
+
   //
   bool _isLoading = false;
+
+  // void signUp(String email, String password) async {
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
+
+  //   await authenticationController
+  //       .signUp(_formKey, email, password)
+  //       .then((value) {
+  //     authenticationController.postDetailToFireStore(
+  //         email,
+  //         password,
+  //         _firstNameEditingController.text,
+  //         _secondNameEditingController.text,
+  //         context);
+
+  //     Navigator.pushAndRemoveUntil(
+  //         (context),
+  //         MaterialPageRoute(builder: (context) => const HomeScreen()),
+  //         (route) => false);
+  //   }).catchError((e) {
+  //     Fluttertoast.showToast(msg: e.toString());
+  //   });
+
+  //   setState(() {
+  //     _isLoading = false;
+  //   });
+  // }
+
   void signUp() async {
     setState(() {
       _isLoading = true;
     });
-    AuthenticationController _auth = AuthenticationController();
-    var sigUpUser = await _auth
-        .signUp(_formKey, _emailEditingController.text,
-            _passwordEditingController.text)
-        .then((value) {
-      _auth.postDetailToFireStore(
-          _emailEditingController.text,
-          _passwordEditingController.text,
-          _firstNameEditingController.text,
-          _secondNameEditingController.text,
-          context);
-      setState(() {
-        _isLoading = false;
+
+    if (_formKey.currentState!.validate()) {
+      await authenticationController
+          .signUp(_emailEditingController.text, _passwordEditingController.text,
+              context)
+          .then((value) {
+        authenticationController.postDetailToFireStore(
+            _emailEditingController.text,
+            _passwordEditingController.text,
+            _firstNameEditingController.text,
+            _secondNameEditingController.text,
+            context);
+
+        Navigator.pushAndRemoveUntil(
+            (context),
+            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            (route) => false);
       });
-      Navigator.pushAndRemoveUntil(
-          (context),
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-          (route) => false);
+    }
+
+    setState(() {
+      _isLoading = false;
     });
   }
 
@@ -102,7 +136,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.person),
+        prefixIcon: const Icon(Icons.person),
         contentPadding: const EdgeInsets.fromLTRB(
           20,
           15,
@@ -134,7 +168,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       },
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(
-        prefixIcon: Icon(Icons.mail),
+        prefixIcon: const Icon(Icons.mail),
         contentPadding: const EdgeInsets.fromLTRB(
           20,
           15,
@@ -195,8 +229,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       autofocus: false,
       controller: _confirmPasswordEditingController,
       validator: ((value) {
-        if (_confirmPasswordEditingController.text.length > 6 &&
-            value != _passwordEditingController.text) {
+        RegExp regExp = RegExp(r'^.{6,}$');
+        if (value!.isEmpty) {
+          return 'Confirm password is required';
+        }
+        if (!regExp.hasMatch(value) ||
+            _confirmPasswordEditingController.text.length > 6 &&
+                _passwordEditingController.text != value) {
           return 'Password dont match';
         }
         return null;

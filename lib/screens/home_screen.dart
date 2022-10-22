@@ -30,11 +30,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   logOut() async {
-    final AuthenticationController _auth = AuthenticationController();
-    await _auth.signOut();
+    final AuthenticationController auth = AuthenticationController();
+    await auth.signOut();
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: ((context) => LoginScreen()),
+        builder: ((context) => const LoginScreen()),
       ),
     );
   }

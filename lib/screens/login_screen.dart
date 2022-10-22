@@ -1,10 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../controllers/auth_controller.dart';
 import '../screens/registration_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -179,8 +178,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 20,
                   ),
                   const Text(
-                    'Welcome back, you\'ve ben missed!',
-                    style: TextStyle(fontSize: 20),
+                    'Welcome back, you\'ve been missed!',
+                    style: TextStyle(fontSize: 18),
                   ),
                   const SizedBox(
                     height: 40,
@@ -206,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Navigator.of(context)
                               .push(
                             MaterialPageRoute(
-                              builder: (context) => RegistrationScreen(),
+                              builder: (context) => const RegistrationScreen(),
                             ),
                           )
                               .then((value) {
